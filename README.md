@@ -2,23 +2,7 @@
 
 A real-time ant colony ecosystem you observe rather than control. Every ant is an independent agent; trails, nests, territories, booms and collapses emerge from simple biological rules.
 
-**Live demo:** once deployed, your site will be at `https://<your-username>.github.io/<repository-name>/`
-
 ## Deploying to GitHub Pages
-
-1. Create a new, empty repository on GitHub.
-2. Upload the contents of this folder (not the folder itself) to the repository root. With the web interface: **Add file → Upload files**, drag everything in, commit.
-3. Go to **Settings → Pages**. Under *Build and deployment*, choose **Deploy from a branch**, select `main` and `/ (root)`, and save.
-4. After a minute or so the site is live at the address shown on that page.
-
-There is no build step. The `.nojekyll` file tells Pages to serve the files as they are.
-
-To run locally, serve the folder over HTTP (ES modules don't load from `file://`):
-
-```
-python3 -m http.server 8000
-# then open http://localhost:8000
-```
 
 ## What you can do
 

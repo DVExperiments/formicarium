@@ -1,0 +1,16 @@
+name: Simulation tests
+on:
+  push:
+  pull_request:
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - name: Unit tests
+        run: node tests/run.mjs
+      - name: Unattended long run (2 simulated years, 3 colonies)
+        run: node tests/longrun.mjs 64 ci --colonies

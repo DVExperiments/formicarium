@@ -1,0 +1,29 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Formicarium tests</title>
+<style>
+  body { font: 15px/1.5 system-ui, sans-serif; background: #23241a; color: #e8e9d2; margin: 0; padding: 24px; }
+  h1 { font: italic 600 1.6rem Georgia, serif; margin: 0 0 4px; }
+  p { color: #a3aa86; margin: 0 0 16px; }
+  pre { background: #2f3022; padding: 16px; border-radius: 10px; white-space: pre-wrap; }
+  a { color: #e3a535; }
+</style>
+</head>
+<body>
+<h1>Formicarium simulation tests</h1>
+<p>Runs the same suite as <code>node tests/run.mjs</code>, in your browser. <a href="../">Back to the simulation</a></p>
+<pre id="out">Running…</pre>
+<script type="module">
+  import { runTests } from './suite.js';
+  const out = document.getElementById('out');
+  out.textContent = '';
+  setTimeout(() => {
+    const { pass, fail } = runTests((line) => { out.textContent += line + '\n'; });
+    document.title = `${fail ? '✗' : '✓'} ${pass}/${pass + fail} tests`;
+  }, 50);
+</script>
+</body>
+</html>

@@ -1,0 +1,100 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Formicarium — a living ant colony ecosystem</title>
+<meta name="description" content="A real-time ant colony ecosystem simulator. Watch colonies forage, build, breed, compete and overwinter.">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🐜</text></svg>">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:ital,wght@0,400;0,700;1,400&family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,600;1,9..144,500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+<canvas id="world" aria-label="Simulation view. Drag to pan, scroll to zoom, click an ant or nest to inspect it."></canvas>
+
+<header class="topbar">
+  <h1 class="wordmark">Formicarium</h1>
+  <div class="transport">
+    <button id="btnPlay" class="iconbtn" aria-label="Pause" title="Pause / resume (Space)">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path class="i-pause" d="M7 5h3v14H7zM14 5h3v14h-3z"/><path class="i-play" d="M8 5l11 7-11 7z"/></svg>
+    </button>
+    <div class="speeds" role="group" aria-label="Simulation speed">
+      <button data-speed="1" class="on" title="Normal speed (1)">1×</button>
+      <button data-speed="2" title="2× (2)">2×</button>
+      <button data-speed="5" title="5× (3)">5×</button>
+      <button data-speed="10" title="10× (4)">10×</button>
+    </div>
+  </div>
+  <div class="clock" id="clock"></div>
+  <div class="weather" id="weather"></div>
+  <div class="lag" id="lag" hidden></div>
+  <div class="spacer"></div>
+  <button id="btnReset" class="textbtn" title="Restart this experiment from its initial state">Reset</button>
+  <button id="btnPanel" class="textbtn" aria-expanded="true" aria-controls="panel">Hide panel</button>
+</header>
+
+<nav class="tools" aria-label="Tools">
+  <button class="tool on" data-tool="inspect" title="Inspect and pan (I)">
+    <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 3l14 8-6 1.5L10 19z"/></svg><span>Inspect</span></button>
+  <p class="tools-note">Drag food onto the ground</p>
+  <button class="tool food" data-tool="seed" title="Seeds: a scatter of grain. Harvesters love them.">
+    <svg viewBox="0 0 24 24" aria-hidden="true"><ellipse cx="8" cy="10" rx="3.2" ry="2" transform="rotate(-30 8 10)"/><ellipse cx="15" cy="8" rx="3.2" ry="2" transform="rotate(20 15 8)"/><ellipse cx="12" cy="16" rx="3.2" ry="2" transform="rotate(-10 12 16)"/></svg><span>Seeds</span></button>
+  <button class="tool food" data-tool="insect" title="Dead insect: protein for growing larvae.">
+    <svg viewBox="0 0 24 24" aria-hidden="true"><ellipse cx="11" cy="12" rx="6" ry="4"/><circle cx="18.5" cy="12" r="2.2"/><path d="M8 8L5 4M11 8l0-4M14 8l3-4M8 16l-3 4M11 16v4M14 16l3 4" stroke="currentColor" stroke-width="1.4" fill="none"/></svg><span>Insect</span></button>
+  <button class="tool food" data-tool="fruit" title="Fallen fruit: sugary, and it rots.">
+    <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="14" r="7"/><path d="M12 7c0-2 1-3 3-4" stroke="currentColor" stroke-width="1.6" fill="none"/></svg><span>Fruit</span></button>
+  <button class="tool food" data-tool="sugar" title="Sugar water: pure carbohydrate energy.">
+    <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3c4 5 6 8 6 11a6 6 0 01-12 0c0-3 2-6 6-11z"/></svg><span>Sugar</span></button>
+  <button class="tool" data-tool="colony" title="Found a new colony (C)">
+    <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 18c3-6 15-6 18 0z"/><circle cx="12" cy="15.5" r="1.8" fill="var(--panel)"/><path d="M12 3v6M9 6h6" stroke="currentColor" stroke-width="1.8"/></svg><span>Colony</span></button>
+  <hr>
+  <button class="toggle" data-overlay="pheromones" aria-pressed="false" title="Show scent trails and alarm pheromone (P)">Trails</button>
+  <button class="toggle" data-overlay="territory" aria-pressed="false" title="Show foraging territories (T)">Territory</button>
+  <button class="toggle" data-overlay="debug" aria-pressed="false" title="Debugging overlay (D)">Debug</button>
+</nav>
+
+<div class="viewswitch" role="group" aria-label="View">
+  <button id="viewSurface" class="on">Surface</button>
+  <button id="viewNest">Underground</button>
+  <select id="nestSelect" aria-label="Colony to view underground"></select>
+</div>
+
+<div class="popover" id="speciesPicker" hidden>
+  <p class="pop-title">Choose a species, then click the ground</p>
+  <div id="speciesList"></div>
+</div>
+
+<aside class="panel" id="panel">
+  <div class="tabs" role="tablist">
+    <button role="tab" data-tab="inspect" aria-selected="true">Inspect</button>
+    <button role="tab" data-tab="colonies" aria-selected="false">Colonies</button>
+    <button role="tab" data-tab="graphs" aria-selected="false">Graphs</button>
+    <button role="tab" data-tab="events" aria-selected="false">Events</button>
+    <button role="tab" data-tab="world" aria-selected="false">World</button>
+  </div>
+  <section class="tab" id="tab-inspect"></section>
+  <section class="tab" id="tab-colonies" hidden></section>
+  <section class="tab" id="tab-graphs" hidden>
+    <div class="row">
+      <label>Measure <select id="graphMetric"></select></label>
+      <label>Colony <select id="graphColony"></select></label>
+    </div>
+    <canvas id="chart" class="chart"></canvas>
+    <div id="chartLegend" class="legend"></div>
+  </section>
+  <section class="tab" id="tab-events" hidden>
+    <label class="check"><input type="checkbox" id="evMinor"> Show minor events</label>
+    <ol id="eventList" class="events"></ol>
+  </section>
+  <section class="tab" id="tab-world" hidden></section>
+</aside>
+
+<div id="ghost" class="ghost" hidden></div>
+<div id="hud" class="hud" hidden></div>
+<div id="toast" class="toast" role="status" aria-live="polite"></div>
+<noscript><p class="noscript">Formicarium needs JavaScript to run the simulation.</p></noscript>
+<script type="module" src="js/main.js"></script>
+</body>
+</html>

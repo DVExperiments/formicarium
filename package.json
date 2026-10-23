@@ -1,0 +1,13 @@
+{
+  "name": "formicarium",
+  "version": "1.0.0",
+  "description": "A realistic ant colony ecosystem simulator that runs in the browser.",
+  "type": "module",
+  "private": true,
+  "scripts": {
+    "test": "node tests/run.mjs",
+    "longrun": "node tests/longrun.mjs 64 longrun --colonies",
+    "serve": "python3 -m http.server 8000"
+  },
+  "license": "MIT"
+}
